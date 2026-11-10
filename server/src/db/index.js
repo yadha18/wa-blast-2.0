@@ -47,4 +47,10 @@ if (!existingColumns.includes('banner_path')) {
   db.exec(`ALTER TABLE campaigns ADD COLUMN banner_path TEXT`);
 }
 
+// Per-contact template variables (all Excel columns) stored as JSON.
+const contactColumns = db.prepare(`PRAGMA table_info(contacts)`).all().map((c) => c.name);
+if (!contactColumns.includes('vars')) {
+  db.exec(`ALTER TABLE contacts ADD COLUMN vars TEXT`);
+}
+
 export default db;

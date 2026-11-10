@@ -36,7 +36,12 @@ const router = Router();
 const runControl = new Map();
 
 function fillTemplate(template, contact) {
-  return template.replaceAll('{{nama}}', contact.name || '').replaceAll('{{name}}', contact.name || '');
+  let vars = {};
+  try { vars = contact.vars ? JSON.parse(contact.vars) : {}; } catch { /* ignore bad JSON */ }
+  // {{nama}} / {{name}} always resolve to the detected name column.
+  vars.nama = vars.nama || contact.name || '';
+  vars.name = vars.name || contact.name || '';
+  return template.replace(/\{\{\s*([a-zA-Z0-9_]+)\s*\}\}/g, (_, key) => vars[key.toLowerCase()] ?? '');
 }
 
 router.get('/', (req, res) => {

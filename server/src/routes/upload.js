@@ -21,8 +21,9 @@ router.post('/', upload.single('file'), (req, res) => {
   const message = req.body.message || '';
 
   let rows;
+  let meta;
   try {
-    rows = parseExcelBuffer(req.file.buffer);
+    ({ rows, meta } = parseExcelBuffer(req.file.buffer));
   } catch (err) {
     const statusCode = err.code === 'ROW_LIMIT_EXCEEDED' ? 413 : 400;
     return res.status(statusCode).json({ error: err.message });
@@ -33,8 +34,8 @@ router.post('/', upload.single('file'), (req, res) => {
     `INSERT INTO campaigns (id, name, message, status, total) VALUES (?, ?, ?, 'draft', ?)`
   );
   const insertContact = db.prepare(
-    `INSERT INTO contacts (campaign_id, raw_number, normalized_number, name, is_valid, invalid_reason, status)
-     VALUES (?, ?, ?, ?, ?, ?, ?)`
+    `INSERT INTO contacts (campaign_id, raw_number, normalized_number, name, is_valid, invalid_reason, status, vars)
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?)`
   );
 
   const insertMany = (rows) => {
@@ -56,7 +57,8 @@ router.post('/', upload.single('file'), (req, res) => {
           String(row.name ?? ''),
           valid ? 1 : 0,
           reason,
-          valid ? 'pending' : 'invalid'
+          valid ? 'pending' : 'invalid',
+        JSON.stringify(row.vars || {})
         );
       }
       db.exec('COMMIT');
@@ -80,6 +82,7 @@ router.post('/', upload.single('file'), (req, res) => {
     invalid: invalidCount,
     maxRows: MAX_ROWS,
     preview,
+    columns: meta,
   });
 });
 

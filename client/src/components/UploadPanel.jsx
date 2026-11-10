@@ -59,6 +59,24 @@ export default function UploadPanel({ onUploaded, disabled }) {
         </div>
       )}
 
+      {result?.columns && (
+        <div className="mt-3 text-xs text-ink/70 space-y-1">
+          <p>
+            Kolom nomor: <span className="mono text-ink">{result.columns.phoneColumn}</span>
+            {' · '}Kolom nama:{' '}
+            <span className="mono text-ink">{result.columns.nameColumn || 'tidak ditemukan'}</span>
+          </p>
+          {result.columns.variables?.length > 0 && (
+            <p>
+              Variabel pesan:{' '}
+              {result.columns.variables.map((v) => (
+                <span key={v} className="mono border border-line px-1.5 py-0.5 mr-1">{`{{${v}}}`}</span>
+              ))}
+            </p>
+          )}
+        </div>
+      )}
+
       {result?.preview?.length > 0 && (
         <div className="mt-4 max-h-48 overflow-y-auto border border-line">
           <table className="w-full text-xs mono">
